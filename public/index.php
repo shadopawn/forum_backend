@@ -7,14 +7,27 @@ require __DIR__ . '/../vendor/autoload.php';
 
 $app = AppFactory::create();
 
-$app->get('/', function (Request $request, Response $response) {
-    $data = array('name' => 'Rob', 'age' => 40, 'test' => 200);
+$app->addErrorMiddleware(true, true, false);
+
+$app->get('/forum_backend/api/v3/topics', function (Request $request, Response $response) {
+    $data = array(
+        'data' => array(
+            array(
+                'id' => '1',
+                'name' => 'programming'
+            ),
+            array(
+                'id' => '2',
+                'name' => 'design'
+            )
+        )
+    );
     $payload = json_encode($data);
 
     $response->getBody()->write($payload);
     return $response
         ->withHeader('Content-Type', 'application/json')
-        ->withStatus(201);
+        ->withStatus(200);
 });
 
 $app->run();
