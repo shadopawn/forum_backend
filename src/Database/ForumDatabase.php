@@ -36,4 +36,23 @@ class ForumDatabase
             echo "Error: " . $error->getMessage();
         }
     }
+
+    public function getThreadsByTopic(int $topicID){
+        try {
+            $sql = "SELECT * FROM thread WHERE topic_id=$topicID";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $dataContainer = array("data" => $results);
+            $json = json_encode($dataContainer);
+            //echo $json;
+            return $json;
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
 }
+
+//$forumDatabase = new ForumDatabase();
+//$forumDatabase->getThreadsByTopic(0);

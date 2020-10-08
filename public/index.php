@@ -13,8 +13,17 @@ $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, false);
 
 $app->get('/forum_backend/api/v3/topics', function (Request $request, Response $response) use ($forumDatabase) {
-    $json = $forumDatabase->getTopics();
-    $response->getBody()->write($json);
+    $jsonResponse = $forumDatabase->getTopics();
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
+});
+
+$app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $request, Response $response, array $args) use ($forumDatabase) {
+    $topicID = $args['topicID'];
+    $jsonResponse = $forumDatabase->getThreadsByTopic($topicID);
+    $response->getBody()->write($jsonResponse);
     return $response
         ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
