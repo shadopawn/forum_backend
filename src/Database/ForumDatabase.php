@@ -1,19 +1,39 @@
 <?php
-$servername = "localhost";
-$username = "root";
-$dbname = "forum";
 
-try {
-    $connection = new PDO("mysql:host=$servername;dbname=$dbname", $username);
-    $connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $statement = $connection->prepare("SELECT * FROM topic");
-    $statement->execute();
+class ForumDatabase
+{
+    private $connection = null;
 
-    $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-    $dataContainer = array("data" => $results);
-    $json = json_encode($dataContainer);
-    echo $json;
-} catch(PDOException $error) {
-    echo "Error: " . $error->getMessage();
+    function __construct() {
+        $servername = "10.0.0.10";
+        $username = "root";
+        $dbname = "forum";
+        try {
+            $this->connection = new PDO("mysql:host=$servername;dbname=$dbname", $username);
+            $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            //echo "Connected successfully";
+        }catch(PDOException $e) {
+            echo "Connection failed: " . $e->getMessage();
+        }
+    }
+
+    function __destruct() {
+        $this->connection = null;
+    }
+
+    public function getTopics(){
+        try {
+            $sql = "SELECT * FROM topic";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $dataContainer = array("data" => $results);
+            $json = json_encode($dataContainer);
+            //echo $json;
+            return $json;
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
 }
-$connection = null;
