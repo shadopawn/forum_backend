@@ -52,7 +52,48 @@ class ForumDatabase
             echo "Error: " . $error->getMessage();
         }
     }
+
+    public function getThreadWithPostsAndUser(int $threadID){
+
+    }
+
+    public function appendUserToPosts(int $threadID){
+        $posts = $this->getPostsByThread($threadID);
+        foreach ($posts as &$post){
+            $userID = $post['user_id'];
+            $user = $this->getUser($userID);
+            $post['user'] = $user;
+        }
+        echo json_encode($posts, JSON_PRETTY_PRINT);
+    }
+
+    public function getPostsByThread(int $threadID){
+        try {
+            $sql = "SELECT * FROM post WHERE thread_id=$threadID";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $results;
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
+
+    //returns associative array of the user with $userID
+    public function getUser(int $userID){
+        try {
+            $sql = "SELECT * FROM user WHERE id=$userID";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $results[0];
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
 }
 
-//$forumDatabase = new ForumDatabase();
-//$forumDatabase->getThreadsByTopic(0);
+$forumDatabase = new ForumDatabase();
+$forumDatabase->appendUserToPosts(1);
