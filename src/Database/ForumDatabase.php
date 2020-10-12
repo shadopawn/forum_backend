@@ -21,37 +21,31 @@ class ForumDatabase
         $this->connection = null;
     }
 
-    //returns json for all the topics
+    //returns associative array for all the topics
     public function getTopics(){
         try {
             $sql = "SELECT * FROM topic";
 
             $results = $this->getAssociativeArrayFromSQL($sql);
-            $dataContainer = array("data" => $results);
-            $json = json_encode($dataContainer, JSON_PRETTY_PRINT);
-            //echo $json;
-            return $json;
+            return array("data" => $results);
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
     }
 
-    //returns json for the threads with a specific $topicID
+    //returns associative array for the threads with a specific $topicID
     public function getThreadsByTopic(int $topicID){
         try {
             $sql = "SELECT * FROM thread WHERE topic_id=$topicID";
 
             $results = $this->getAssociativeArrayFromSQL($sql);
-            $dataContainer = array("data" => $results);
-            $json = json_encode($dataContainer, JSON_PRETTY_PRINT);
-            //echo $json;
-            return $json;
+            return array("data" => $results);
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
     }
 
-    //returns json for the threads with associated posts and their users
+    //returns associative array for the threads with associated posts and their users
     public function getThreadWithPostsAndUser(int $threadID){
         try {
             $sql = "SELECT * FROM thread WHERE id=$threadID";
@@ -59,8 +53,7 @@ class ForumDatabase
             $results = $this->getAssociativeArrayFromSQL($sql);
             $thread =  $results[0];
             $thread["posts"] = $this->getPostsWithUser($threadID);
-            $threadDataContainer = array("data" => $thread );
-            return json_encode($threadDataContainer , JSON_PRETTY_PRINT);
+            return array("data" => $thread );
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
@@ -78,7 +71,7 @@ class ForumDatabase
     }
 
     //returns associative array of the posts with $threadID
-    private function getPostsByThread(int $threadID){
+    public function getPostsByThread(int $threadID){
         try {
             $sql = "SELECT * FROM post WHERE thread_id=$threadID";
 

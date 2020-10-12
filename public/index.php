@@ -13,7 +13,8 @@ $app = AppFactory::create();
 $app->addErrorMiddleware(true, true, false);
 
 $app->get('/forum_backend/api/v3/topics', function (Request $request, Response $response) use ($forumDatabase) {
-    $jsonResponse = $forumDatabase->getTopics();
+    $topics = $forumDatabase->getTopics();
+    $jsonResponse = json_encode($topics, JSON_PRETTY_PRINT);
     $response->getBody()->write($jsonResponse);
     return $response
         ->withHeader('Content-Type', 'application/json')
@@ -22,7 +23,8 @@ $app->get('/forum_backend/api/v3/topics', function (Request $request, Response $
 
 $app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $request, Response $response, array $args) use ($forumDatabase) {
     $topicID = $args['topicID'];
-    $jsonResponse = $forumDatabase->getThreadsByTopic($topicID);
+    $threads = $forumDatabase->getThreadsByTopic($topicID);
+    $jsonResponse = json_encode($threads, JSON_PRETTY_PRINT);
     $response->getBody()->write($jsonResponse);
     return $response
         ->withHeader('Content-Type', 'application/json')
@@ -31,7 +33,18 @@ $app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $r
 
 $app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request, Response $response, array $args) use ($forumDatabase) {
     $threadID = $args['threadID'];
-    $jsonResponse = $forumDatabase->getThreadWithPostsAndUser($threadID);
+    $threads = $forumDatabase->getThreadWithPostsAndUser($threadID);
+    $jsonResponse = json_encode($threads, JSON_PRETTY_PRINT);
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
+});
+
+$app->get('/forum_backend/api/v3/thread/{threadID}/post', function (Request $request, Response $response, array $args) use ($forumDatabase) {
+    $threadID = $args['threadID'];
+    $posts = $forumDatabase->getPostsByThread($threadID);
+    $jsonResponse = json_encode($posts, JSON_PRETTY_PRINT);
     $response->getBody()->write($jsonResponse);
     return $response
         ->withHeader('Content-Type', 'application/json')
