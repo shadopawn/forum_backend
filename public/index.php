@@ -29,4 +29,13 @@ $app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $r
         ->withStatus(200);
 });
 
+$app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request, Response $response, array $args) use ($forumDatabase) {
+    $threadID = $args['threadID'];
+    $jsonResponse = $forumDatabase->getThreadWithPostsAndUser($threadID);
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
+});
+
 $app->run();

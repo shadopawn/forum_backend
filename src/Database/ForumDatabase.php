@@ -5,7 +5,7 @@ class ForumDatabase
     private $connection = null;
 
     function __construct() {
-        $servername = "10.0.0.10";
+        $servername = "localhost";
         $username = "root";
         $dbname = "forum";
         try {
@@ -21,6 +21,7 @@ class ForumDatabase
         $this->connection = null;
     }
 
+    //returns json for all the topics
     public function getTopics(){
         try {
             $sql = "SELECT * FROM topic";
@@ -37,6 +38,7 @@ class ForumDatabase
         }
     }
 
+    //returns json for the threads with a specific $topicID
     public function getThreadsByTopic(int $topicID){
         try {
             $sql = "SELECT * FROM thread WHERE topic_id=$topicID";
@@ -53,6 +55,7 @@ class ForumDatabase
         }
     }
 
+    //returns json for the threads with associated posts and their users
     public function getThreadWithPostsAndUser(int $threadID){
         try {
             $sql = "SELECT * FROM thread WHERE id=$threadID";
@@ -69,6 +72,7 @@ class ForumDatabase
         }
     }
 
+    //returns associative array of the posts with user who made the post
     public function getPostsWithUser(int $threadID){
         $posts = $this->getPostsByThread($threadID);
         foreach ($posts as &$post){
@@ -76,18 +80,18 @@ class ForumDatabase
             $user = $this->getUser($userID);
             $post['user'] = $user;
         }
-        //echo json_encode($posts, JSON_PRETTY_PRINT);
         return $posts;
     }
 
+    //returns associative array of the posts with $threadID
     public function getPostsByThread(int $threadID){
         try {
             $sql = "SELECT * FROM post WHERE thread_id=$threadID";
             $statement = $this->connection->prepare($sql);
             $statement->execute();
 
-            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-            return $results;
+            $posts = $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $posts;
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
@@ -100,13 +104,13 @@ class ForumDatabase
             $statement = $this->connection->prepare($sql);
             $statement->execute();
 
-            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
-            return $results[0];
+            $users = $statement->fetchAll(PDO::FETCH_ASSOC);
+            return $users[0];
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
     }
 }
 
-$forumDatabase = new ForumDatabase();
+//$forumDatabase = new ForumDatabase();
 //$forumDatabase->getThreadWithPostsAndUser(1);
