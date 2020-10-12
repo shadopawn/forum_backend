@@ -29,7 +29,7 @@ class ForumDatabase
 
             $results = $statement->fetchAll(PDO::FETCH_ASSOC);
             $dataContainer = array("data" => $results);
-            $json = json_encode($dataContainer);
+            $json = json_encode($dataContainer, JSON_PRETTY_PRINT);
             //echo $json;
             return $json;
         } catch(PDOException $error) {
@@ -45,7 +45,7 @@ class ForumDatabase
 
             $results = $statement->fetchAll(PDO::FETCH_ASSOC);
             $dataContainer = array("data" => $results);
-            $json = json_encode($dataContainer);
+            $json = json_encode($dataContainer, JSON_PRETTY_PRINT);
             //echo $json;
             return $json;
         } catch(PDOException $error) {
@@ -54,17 +54,30 @@ class ForumDatabase
     }
 
     public function getThreadWithPostsAndUser(int $threadID){
+        try {
+            $sql = "SELECT * FROM thread WHERE id=$threadID";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
 
+            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $thread =  $results[0];
+            $thread["posts"] = $this->getPostsWithUser($threadID);
+            $threadDataContainer = array("data" => $thread );
+            return json_encode($threadDataContainer , JSON_PRETTY_PRINT);
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
     }
 
-    public function appendUserToPosts(int $threadID){
+    public function getPostsWithUser(int $threadID){
         $posts = $this->getPostsByThread($threadID);
         foreach ($posts as &$post){
             $userID = $post['user_id'];
             $user = $this->getUser($userID);
             $post['user'] = $user;
         }
-        echo json_encode($posts, JSON_PRETTY_PRINT);
+        //echo json_encode($posts, JSON_PRETTY_PRINT);
+        return $posts;
     }
 
     public function getPostsByThread(int $threadID){
@@ -96,4 +109,4 @@ class ForumDatabase
 }
 
 $forumDatabase = new ForumDatabase();
-$forumDatabase->appendUserToPosts(1);
+//$forumDatabase->getThreadWithPostsAndUser(1);
