@@ -21,16 +21,6 @@ $app->get('/forum_backend/api/v3/topics', function (Request $request, Response $
         ->withStatus(200);
 });
 
-$app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $request, Response $response, array $args) use ($forumDatabase) {
-    $topicID = $args['topicID'];
-    $threads = $forumDatabase->getThreadsByTopic($topicID);
-    $jsonResponse = json_encode($threads, JSON_PRETTY_PRINT);
-    $response->getBody()->write($jsonResponse);
-    return $response
-        ->withHeader('Content-Type', 'application/json')
-        ->withStatus(200);
-});
-
 $app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request, Response $response, array $args) use ($forumDatabase) {
     $threadID = $args['threadID'];
     $threads = $forumDatabase->getThreadWithPostsAndUser($threadID);
@@ -41,10 +31,22 @@ $app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request,
         ->withStatus(200);
 });
 
+$app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $request, Response $response, array $args) use ($forumDatabase) {
+    $topicID = $args['topicID'];
+    $threads = $forumDatabase->getThreadsByTopic($topicID);
+    $jsonResponse = json_encode($threads, JSON_PRETTY_PRINT);
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
+});
+
+
 $app->get('/forum_backend/api/v3/thread/{threadID}/post', function (Request $request, Response $response, array $args) use ($forumDatabase) {
     $threadID = $args['threadID'];
     $posts = $forumDatabase->getPostsByThread($threadID);
-    $jsonResponse = json_encode($posts, JSON_PRETTY_PRINT);
+    $dataContainer = array("data" => $posts);
+    $jsonResponse = json_encode($dataContainer, JSON_PRETTY_PRINT);
     $response->getBody()->write($jsonResponse);
     return $response
         ->withHeader('Content-Type', 'application/json')
