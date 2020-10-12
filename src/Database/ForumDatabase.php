@@ -25,10 +25,8 @@ class ForumDatabase
     public function getTopics(){
         try {
             $sql = "SELECT * FROM topic";
-            $statement = $this->connection->prepare($sql);
-            $statement->execute();
 
-            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->getAssociativeArrayFromSQL($sql);
             $dataContainer = array("data" => $results);
             $json = json_encode($dataContainer, JSON_PRETTY_PRINT);
             //echo $json;
@@ -42,10 +40,8 @@ class ForumDatabase
     public function getThreadsByTopic(int $topicID){
         try {
             $sql = "SELECT * FROM thread WHERE topic_id=$topicID";
-            $statement = $this->connection->prepare($sql);
-            $statement->execute();
 
-            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->getAssociativeArrayFromSQL($sql);
             $dataContainer = array("data" => $results);
             $json = json_encode($dataContainer, JSON_PRETTY_PRINT);
             //echo $json;
@@ -59,10 +55,8 @@ class ForumDatabase
     public function getThreadWithPostsAndUser(int $threadID){
         try {
             $sql = "SELECT * FROM thread WHERE id=$threadID";
-            $statement = $this->connection->prepare($sql);
-            $statement->execute();
 
-            $results = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $results = $this->getAssociativeArrayFromSQL($sql);
             $thread =  $results[0];
             $thread["posts"] = $this->getPostsWithUser($threadID);
             $threadDataContainer = array("data" => $thread );
@@ -73,7 +67,7 @@ class ForumDatabase
     }
 
     //returns associative array of the posts with user who made the post
-    public function getPostsWithUser(int $threadID){
+    private function getPostsWithUser(int $threadID){
         $posts = $this->getPostsByThread($threadID);
         foreach ($posts as &$post){
             $userID = $post['user_id'];
@@ -84,13 +78,11 @@ class ForumDatabase
     }
 
     //returns associative array of the posts with $threadID
-    public function getPostsByThread(int $threadID){
+    private function getPostsByThread(int $threadID){
         try {
             $sql = "SELECT * FROM post WHERE thread_id=$threadID";
-            $statement = $this->connection->prepare($sql);
-            $statement->execute();
 
-            $posts = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $posts = $this->getAssociativeArrayFromSQL($sql);
             return $posts;
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
@@ -98,17 +90,21 @@ class ForumDatabase
     }
 
     //returns associative array of the user with $userID
-    public function getUser(int $userID){
+    private function getUser(int $userID){
         try {
             $sql = "SELECT * FROM user WHERE id=$userID";
-            $statement = $this->connection->prepare($sql);
-            $statement->execute();
 
-            $users = $statement->fetchAll(PDO::FETCH_ASSOC);
+            $users = $this->getAssociativeArrayFromSQL($sql);
             return $users[0];
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
+    }
+
+    private function getAssociativeArrayFromSQL($sql){
+        $statement = $this->connection->prepare($sql);
+        $statement->execute();
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
