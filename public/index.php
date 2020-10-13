@@ -10,6 +10,8 @@ $forumDatabase = new ForumDatabase();
 
 $app = AppFactory::create();
 
+$app->addBodyParsingMiddleware();
+
 $app->addErrorMiddleware(true, true, false);
 
 $app->get('/forum_backend/api/v3/topics', function (Request $request, Response $response) use ($forumDatabase) {
@@ -21,9 +23,9 @@ $app->get('/forum_backend/api/v3/topics', function (Request $request, Response $
         ->withStatus(200);
 });
 
-$app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request, Response $response, array $args) use ($forumDatabase) {
-    $threadID = $args['threadID'];
-    $threads = $forumDatabase->getThreadWithPostsAndUser($threadID);
+$app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $request, Response $response, array $args) use ($forumDatabase) {
+    $topicID = $args['topicID'];
+    $threads = $forumDatabase->getThreadsByTopic($topicID);
     $jsonResponse = json_encode($threads, JSON_PRETTY_PRINT);
     $response->getBody()->write($jsonResponse);
     return $response
@@ -31,9 +33,9 @@ $app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request,
         ->withStatus(200);
 });
 
-$app->get('/forum_backend/api/v3/topics/{topicID}/threads', function (Request $request, Response $response, array $args) use ($forumDatabase) {
-    $topicID = $args['topicID'];
-    $threads = $forumDatabase->getThreadsByTopic($topicID);
+$app->get('/forum_backend/api/v3/thread/{threadID}', function (Request $request, Response $response, array $args) use ($forumDatabase) {
+    $threadID = $args['threadID'];
+    $threads = $forumDatabase->getThreadWithPostsAndUser($threadID);
     $jsonResponse = json_encode($threads, JSON_PRETTY_PRINT);
     $response->getBody()->write($jsonResponse);
     return $response
@@ -51,6 +53,13 @@ $app->get('/forum_backend/api/v3/thread/{threadID}/post', function (Request $req
     return $response
         ->withHeader('Content-Type', 'application/json')
         ->withStatus(200);
+});
+
+$app->post('/forum_backend/api/v3/thread', function (Request $request, Response $response) use ($forumDatabase) {
+    $parsedBody = $request->getParsedBody();
+    $name = $parsedBody['name'];
+    $response->getBody()->write("Hello, $name");
+    return $response;
 });
 
 $app->run();
