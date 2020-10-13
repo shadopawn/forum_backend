@@ -5,9 +5,10 @@ class ForumDatabase
     private $connection = null;
 
     function __construct() {
-        $servername = "localhost";
-        $username = "root";
-        $dbname = "forum";
+        $databaseConfig = require(__DIR__ .'/../../config/config.php');
+        $servername = $databaseConfig["severname"];
+        $username = $databaseConfig["username"];
+        $dbname = $databaseConfig["dbname"];
         try {
             $this->connection = new PDO("mysql:host=$servername;dbname=$dbname", $username);
             $this->connection->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
