@@ -95,12 +95,40 @@ class ForumDatabase
         }
     }
 
-    private function getAssociativeArrayFromSQL($sql){
+    private function getAssociativeArrayFromSQL(string $sql){
         $statement = $this->connection->prepare($sql);
         $statement->execute();
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    public function registerUser(string $email, string $password){
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $userID = 2;
+
+        try {
+            $sql = "INSERT INTO user (id, email, password)
+                    VALUES (?, ?, ?)";
+            $statement = $this->connection->prepare($sql);
+            $args = [$userID, $email, $hash];
+            $statement->execute($args);
+        } catch(PDOException $e) {
+            echo $sql . "\n" . $e->getMessage();
+        }
+
+    }
+
+    public function createNewThread(){
+        try {
+            $sql = "INSERT INTO thread (id, user_id, topic_id, name)
+                    VALUES ('2', '1', '1', 'test insert topic')";
+            $statement = $this->connection->prepare($sql);
+            $statement->execute();
+        } catch(PDOException $e) {
+            echo $sql . "\n" . $e->getMessage();
+        }
+
+    }
 }
 
 //$forumDatabase = new ForumDatabase();
-//$forumDatabase->getThreadWithPostsAndUser(1);
+//$forumDatabase->registerUser("test@test.com", "test");
