@@ -46,13 +46,21 @@ class ForumDatabase
         }
     }
 
-    //returns associative array for the threads with associated posts and their users
-    public function getThreadWithPostsAndUser(int $threadID){
+    public function getThread(int $threadID){
         try {
             $sql = "SELECT * FROM thread WHERE id=$threadID";
 
             $results = $this->getAssociativeArrayFromSQL($sql);
-            $thread =  $results[0];
+            return $results[0];
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
+
+    //returns associative array for the threads with associated posts and their users
+    public function getThreadWithPostsAndUser(int $threadID){
+        try {
+            $thread =  $this->getThread($threadID);
             $thread["posts"] = $this->getPostsWithUser($threadID);
             return array("data" => $thread );
         } catch(PDOException $error) {
@@ -163,18 +171,22 @@ class ForumDatabase
 
     public function createNewThread(string $name, int $topicID, int $sessionID,  string $sessionKey){
         $threadID = $this->getLastID("thread") + 1 ?? 1;
-        try {
-            $sql = "INSERT INTO thread (id, user_id, topic_id, name)
-                    VALUES ('2', '1', '1', 'test insert topic')";
-            $statement = $this->connection->prepare($sql);
-            $statement->execute();
-        } catch(PDOException $e) {
-            echo $sql . "\n" . $e->getMessage();
+        $sessionInfo = $this->isSessionValid($sessionID, $sessionKey);
+        if($sessionInfo) {
+            try {
+                $sql = "INSERT INTO thread (id, user_id, topic_id, name)
+                        VALUES (?, ?, ?, ?)";
+                $statement = $this->connection->prepare($sql);
+                $args = [$threadID, $sessionInfo["userID"], $topicID, $name];
+                $statement->execute($args);
+                return $this->getThread($threadID);
+            } catch (PDOException $e) {
+                echo $sql . "\n" . $e->getMessage();
+            }
         }
-
     }
 
-    public function isSessionValid(int $sessionID, string $sessionKey){
+    private function isSessionValid(int $sessionID, string $sessionKey){
         try {
             $sql = "SELECT * FROM session WHERE sessionID=$sessionID";
 
@@ -192,5 +204,5 @@ class ForumDatabase
     }
 }
 
-$forumDatabase = new ForumDatabase();
-$forumDatabase->isSessionValid(1, "5a38fc050a3a0c8321e587072a89c253bd197f1d59aa4a06383f291a2861f1c8a0d0174f4b222387");
+//$forumDatabase = new ForumDatabase();
+//$forumDatabase->createNewThread("new new thread",1, 1, "5a38fc050a3a0c8321e587072a89c253bd197f1d59aa4a06383f291a2861f1c8a0d0174f4b222387");

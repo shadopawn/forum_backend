@@ -57,9 +57,12 @@ $app->get('/forum_backend/api/v3/thread/{threadID}/post', function (Request $req
 
 $app->post('/forum_backend/api/v3/thread', function (Request $request, Response $response) use ($forumDatabase) {
     $parsedBody = $request->getParsedBody();
-    $name = $parsedBody['name'];
-    $response->getBody()->write("Hello, $name");
-    return $response;
+    $createdThread = $forumDatabase->createNewThread($parsedBody['name'], $parsedBody['topicID'], $parsedBody['sessionID'], $parsedBody['sessionKey']);
+    $jsonResponse = json_encode($createdThread, JSON_PRETTY_PRINT);
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
 });
 
 $app->post('/forum_backend/api/v3/users', function (Request $request, Response $response) use ($forumDatabase) {
