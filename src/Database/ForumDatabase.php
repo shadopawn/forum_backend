@@ -104,7 +104,7 @@ class ForumDatabase
 
     public function registerUser(string $email, string $password){
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $userID = $this->getLastID("user") + 1;
+        $userID = $this->getLastID("user") + 1 ?? 1;
 
         try {
             $sql = "INSERT INTO user (id, email, password)
@@ -161,7 +161,8 @@ class ForumDatabase
         }
     }
 
-    public function createNewThread(){
+    public function createNewThread(string $name, int $topicID, int $sessionID,  string $sessionKey){
+        $threadID = $this->getLastID("thread") + 1 ?? 1;
         try {
             $sql = "INSERT INTO thread (id, user_id, topic_id, name)
                     VALUES ('2', '1', '1', 'test insert topic')";
@@ -172,7 +173,24 @@ class ForumDatabase
         }
 
     }
+
+    public function isSessionValid(int $sessionID, string $sessionKey){
+        try {
+            $sql = "SELECT * FROM session WHERE sessionID=$sessionID";
+
+            $sessionInfoArray = $this->getAssociativeArrayFromSQL($sql);
+            $sessionInfo = $sessionInfoArray[0];
+            if ($sessionInfo["sessionKey"] == $sessionKey){
+                return $sessionInfo;
+            }
+            else{
+                return false;
+            }
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
 }
 
-//$forumDatabase = new ForumDatabase();
-//$forumDatabase->loginUser("test@test.com", "test");
+$forumDatabase = new ForumDatabase();
+$forumDatabase->isSessionValid(1, "5a38fc050a3a0c8321e587072a89c253bd197f1d59aa4a06383f291a2861f1c8a0d0174f4b222387");
