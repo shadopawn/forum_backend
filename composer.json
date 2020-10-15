@@ -29,7 +29,8 @@
         "slim/psr7": "^1.1",
         "slim/slim": "^4.5",
       "ext-mysqli": "*",
-        "ext-pdo": "*"
+        "ext-pdo": "*",
+      "ext-openssl": "*"
     },
     "require-dev": {
         "jangregor/phpstan-prophecy": "^0.8.0",

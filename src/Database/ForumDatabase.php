@@ -86,7 +86,7 @@ class ForumDatabase
     //returns associative array of the user with $userID
     private function getUser(int $userID){
         try {
-            $sql = "SELECT * FROM user WHERE id=$userID";
+            $sql = "SELECT id, email, created_time, rank FROM user WHERE id=$userID";
 
             $users = $this->getAssociativeArrayFromSQL($sql);
             return $users[0];
@@ -95,15 +95,16 @@ class ForumDatabase
         }
     }
 
-    private function getAssociativeArrayFromSQL(string $sql){
+    private function getAssociativeArrayFromSQL(string $sql, array $args = []){
         $statement = $this->connection->prepare($sql);
-        $statement->execute();
+        $statement->execute($args);
+
         return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function registerUser(string $email, string $password){
         $hash = password_hash($password, PASSWORD_BCRYPT);
-        $userID = 2;
+        $userID = $this->getLastID("user") + 1;
 
         try {
             $sql = "INSERT INTO user (id, email, password)
@@ -115,6 +116,49 @@ class ForumDatabase
             echo $sql . "\n" . $e->getMessage();
         }
 
+        $user = $this->getUser($userID);
+        return array("data" => $user);
+    }
+
+    private function getLastID(string $tableName, string $id = 'id'){
+        try {
+            $sql = "SELECT MAX($id) FROM $tableName";
+            $maxID = $this->getAssociativeArrayFromSQL($sql);
+            return $maxID[0]["MAX($id)"];
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
+
+    public function loginUser(string $email, string $password){
+        try {
+            $sql = "SELECT id, email, password FROM user WHERE email=?";
+            $users = $this->getAssociativeArrayFromSQL($sql, [$email]);
+            $user = $users[0];
+
+            if (password_verify($password, $user["password"])){
+                return $this->createSession($user["id"]);
+            }
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+
+    }
+
+    public function createSession($userID){
+        $sessionID = $this->getLastID("session", "sessionID") + 1 ?? 1;
+        $sessionKey = bin2hex(openssl_random_pseudo_bytes(40));
+        try {
+            $sql = "INSERT INTO session
+                    VALUES (?, ?, ?)";
+            $statement = $this->connection->prepare($sql);
+            $args = [$sessionID, $sessionKey, $userID];
+            $statement->execute($args);
+            $sessionInfo = array("sessionID" => $sessionID, "sessionKey" => $sessionKey, "userID" => $userID);
+            return array("data" => $sessionInfo);
+        } catch(PDOException $error) {
+            echo $error->getMessage();
+        }
     }
 
     public function createNewThread(){
@@ -131,4 +175,4 @@ class ForumDatabase
 }
 
 //$forumDatabase = new ForumDatabase();
-//$forumDatabase->registerUser("test@test.com", "test");
+//$forumDatabase->loginUser("test@test.com", "test");

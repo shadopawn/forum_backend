@@ -62,4 +62,28 @@ $app->post('/forum_backend/api/v3/thread', function (Request $request, Response 
     return $response;
 });
 
+$app->post('/forum_backend/api/v3/users', function (Request $request, Response $response) use ($forumDatabase) {
+    $parsedBody = $request->getParsedBody();
+    $email = $parsedBody['email'];
+    $password = $parsedBody['password'];
+    $user = $forumDatabase->registerUser($email, $password);
+    $jsonResponse = json_encode($user, JSON_PRETTY_PRINT);
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
+});
+
+$app->post('/forum_backend/api/v3/login', function (Request $request, Response $response) use ($forumDatabase) {
+    $parsedBody = $request->getParsedBody();
+    $email = $parsedBody['email'];
+    $password = $parsedBody['password'];
+    $user = $forumDatabase->loginUser($email, $password);
+    $jsonResponse = json_encode($user, JSON_PRETTY_PRINT);
+    $response->getBody()->write($jsonResponse);
+    return $response
+        ->withHeader('Content-Type', 'application/json')
+        ->withStatus(200);
+});
+
 $app->run();
