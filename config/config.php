@@ -1,6 +1,6 @@
 <?php
 return [
-    'severname' => 'localhost',
+    'severname' => '10.0.0.10',
     'username' => 'root',
     'dbname' => 'forum'
 ];
