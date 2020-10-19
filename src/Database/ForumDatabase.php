@@ -114,13 +114,6 @@ class ForumDatabase
         }
     }
 
-    private function getAssociativeArrayFromSQL(string $sql, array $args = []){
-        $statement = $this->connection->prepare($sql);
-        $statement->execute($args);
-
-        return $statement->fetchAll(PDO::FETCH_ASSOC);
-    }
-
     public function registerUser(string $email, string $password){
         $hash = password_hash($password, PASSWORD_BCRYPT);
         $userID = $this->getLastID("user") + 1 ?? 1;
@@ -184,7 +177,7 @@ class ForumDatabase
             $sessionInfo = array("sessionID" => $sessionID, "sessionKey" => $sessionKey, "userID" => $userID);
             return array("data" => $sessionInfo);
         } catch(PDOException $error) {
-            echo $error->getMessage();
+            echo "Error: " . $error->getMessage();
         }
     }
 
@@ -237,6 +230,13 @@ class ForumDatabase
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
+    }
+
+    private function getAssociativeArrayFromSQL(string $sql, array $args = []){
+        $statement = $this->connection->prepare($sql);
+        $statement->execute($args);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
     }
 }
 
