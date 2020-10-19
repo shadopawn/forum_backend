@@ -153,11 +153,19 @@ class ForumDatabase
         try {
             $sql = "SELECT id, email, password FROM user WHERE email=?";
             $users = $this->getAssociativeArrayFromSQL($sql, [$email]);
-            $user = $users[0];
-
-            if (password_verify($password, $user["password"])){
-                return $this->createSession($user["id"]);
+            if(count($users) != 0){
+                $user = $users[0];
+                if (password_verify($password, $user["password"])){
+                    return $this->createSession($user["id"]);
+                }
+                else{
+                    throw new Exception("Invalid email or password");
+                }
             }
+            else{
+                throw new Exception("Invalid email or password");
+            }
+
         } catch(PDOException $error) {
             echo "Error: " . $error->getMessage();
         }
