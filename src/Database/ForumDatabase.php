@@ -91,6 +91,17 @@ class ForumDatabase
         }
     }
 
+    public function getPost(int $postID){
+        try {
+            $sql = "SELECT * FROM post WHERE id=$postID";
+
+            $posts = $this->getAssociativeArrayFromSQL($sql);
+            return array("data" => $posts[0]);
+        } catch(PDOException $error) {
+            echo "Error: " . $error->getMessage();
+        }
+    }
+
     //returns associative array of the user with $userID
     private function getUser(int $userID){
         try {
@@ -153,7 +164,7 @@ class ForumDatabase
 
     }
 
-    public function createSession($userID){
+    private function createSession($userID){
         $sessionID = $this->getLastID("session", "sessionID") + 1 ?? 1;
         $sessionKey = bin2hex(openssl_random_pseudo_bytes(40));
         try {
@@ -186,6 +197,23 @@ class ForumDatabase
         }
     }
 
+    public function createNewPost(string $text, int $threadID, int $sessionID,  string $sessionKey){
+        $postID = $this->getLastID("post") + 1 ?? 1;
+        $sessionInfo = $this->isSessionValid($sessionID, $sessionKey);
+        if($sessionInfo) {
+            try {
+                $sql = "INSERT INTO post (id, text, thread_id, user_id)
+                        VALUES (?, ?, ?, ?)";
+                $statement = $this->connection->prepare($sql);
+                $args = [$postID, $text, $threadID, $sessionInfo["userID"]];
+                $statement->execute($args);
+                return $this->getPost($postID);
+            } catch (PDOException $e) {
+                echo $sql . "\n" . $e->getMessage();
+            }
+        }
+    }
+
     private function isSessionValid(int $sessionID, string $sessionKey){
         try {
             $sql = "SELECT * FROM session WHERE sessionID=$sessionID";
@@ -205,4 +233,4 @@ class ForumDatabase
 }
 
 //$forumDatabase = new ForumDatabase();
-//$forumDatabase->createNewThread("new new thread",1, 1, "5a38fc050a3a0c8321e587072a89c253bd197f1d59aa4a06383f291a2861f1c8a0d0174f4b222387");
+//$forumDatabase->createNewPost("Look at this new post", 1, 1, "5a38fc050a3a0c8321e587072a89c253bd197f1d59aa4a06383f291a2861f1c8a0d0174f4b222387");
